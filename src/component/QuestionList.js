@@ -15,6 +15,7 @@ const QuestionList = () => {
     const [totelQuestion,setTotelQuestion]=useState(0)  //number of question
     const [totelCorrectAnswer,setTotelCorrectAnswer]=useState(0)// totel correct answers
     const [userId,setUserId]=useState(1)
+    const [examProgressId,setExamProId]=useState(0)
     
     
     const [isPassed,setIsPassed]=useState(false)
@@ -26,7 +27,7 @@ const QuestionList = () => {
     useEffect(() => {
         fetchQuestions();
     }, [page, examId]);
-
+//getting all questuins of an exam
     const fetchQuestions = async () => {
         setLoading(true);
         try {
@@ -53,8 +54,10 @@ const QuestionList = () => {
         }));
         console.log(page)
         saveProgress(updatedOptions);
+        
     };
 
+    //saving the exam progress
     const saveProgress = async (updatedOptions) => {
         try {
             await saveExamProgress({
@@ -63,11 +66,16 @@ const QuestionList = () => {
                 currentPage: page,
                 userId: 1,
             });
+            const progress = await getExamProgress(userId,examId);
+            if (progress) {
+                setExamProId(progress.id)
+            }
         } catch (error) {
             console.error('Error saving progress:', error);
         }
     };
 
+    //loading if the exam have any progress
     const loadProgress = async () => {
         try {
             const progress = await getExamProgress(userId,examId);
@@ -75,6 +83,7 @@ const QuestionList = () => {
             if (progress) {
                 setSelectedOptions(progress.userAnswers || {});
                 setPage(progress.currentPage || 0);
+                setExamProId(progress.id)
             }
         } catch (error) {
             console.error('Error loading progress:', error);
@@ -95,9 +104,9 @@ const QuestionList = () => {
     };
 
     //we calculate the result
-    const calculateResult = () => {
+    const calculateResult = async () => {
         let totalQuestions = questions1.length; // Total number of questions
-        
+        //const progress = await getExamProgress(userId,examId);
         let correctAnswers = 0;
         let incorrectAnswers = 0;
     
@@ -141,11 +150,11 @@ const QuestionList = () => {
             isPassed: result.isPassed,
             attemptDate: new Date(), // Current timestamp
         };
-    
+        //submit exam
         try {
             console.log(submissionData)
             await submitExamResult(submissionData); // API call to submit the result
-            await deleteExamProgress(userId, examId); //API call to delete the existing progress
+            
             alert(`Exam submitted successfully!
                 Total Questions: ${result.totalQuestions}
                 Correct Answers: ${result.correctAnswers}
@@ -156,6 +165,17 @@ const QuestionList = () => {
             console.error('Error submitting exam:', error);
             alert('Failed to submit exam. Please try again.');
         }
+         //deleting progress
+        try {
+            console.log("deleting existed progress")
+            console.log("deleted")
+            await deleteExamProgress(examProgressId); //API call to delete the existing progress
+            
+        } catch (error) {
+            console.error('Error submitting Deleting', error);
+            alert('Failed to to delete the existed exam progress.');
+        }
+
     };
     
     
