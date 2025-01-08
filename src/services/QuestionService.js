@@ -71,14 +71,15 @@ export const getExamProgress = async (userId, examId) => {
 };
 
 
-//delete the progress when exam is submitted
-export const deleteExamProgress = async (userId, examId) => {
-    const response = await fetch(`http://localhost:8081/api/progress/exam-progress?userId=${userId}&examId=${examId}`, {
+//delete the progress by progress Id
+export const deleteExamProgress = async (examProgressId) => {
+    const response = await fetch(`http://localhost:8081/api/progress/${examProgressId}`, {
         method: 'DELETE',
     });
-    if (!response.ok) {
+    
+    if (response.status!==200) {
         throw new Error('Failed to delete exam progress');
     }
-    return await response.json();
+    return response.data;
 };
 
