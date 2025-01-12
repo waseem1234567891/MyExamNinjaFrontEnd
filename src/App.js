@@ -10,6 +10,7 @@ import QuestionList from './component/QuestionList';
 import ExamPage from './component/ExamPage';
 import AdminLogin from './component/AdminLogin';
 import AdminDashBoard from './component/AdminDashBoard';
+import ResultPage from './component/ResultPage';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const handleLogout = () => {
@@ -35,6 +36,7 @@ function App() {
         <Route path="/exams/:examId" element={<QuestionList />} />
         <Route path="/adminlogin" element={<AdminLogin />} />
         <Route path="/admindashboard" element={<AdminDashBoard />} />
+        <Route path="/result/:resultId" element={<ResultPage />} />
       </Routes>
      
     

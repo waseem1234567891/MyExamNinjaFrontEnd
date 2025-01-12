@@ -1,11 +1,17 @@
 import axios from 'axios';
 
 const API_BASE_URL = "http://localhost:8081/api/user";
-
+//get exam questions using pagination
 export const getQuestionsByExamId = async (examId, page, size) => {
     const response = await axios.get(`${API_BASE_URL}/exams/${examId}`, {
         params: { page, size }
     });
+    //console.log(response)
+    return response.data;
+};
+//getting questions of an exam
+export const getQuestionsByExamId_Exam = async (examId) => {
+    const response = await axios.get(`${API_BASE_URL}/examallquestions/${examId}`);
     //console.log(response)
     return response.data;
 };
@@ -82,4 +88,36 @@ export const deleteExamProgress = async (examProgressId) => {
     }
     return response.data;
 };
+// calculate and save result
 
+export const calculateAndSaveResult=async(examProgressId)=>
+{
+    try
+    {
+   const resultId= await axios.post(`http://localhost:8081/api/users/result/calAndSaveResult/${examProgressId}`
+        ,{
+            headers: {
+                'Content-Type': 'application/json',
+            },
+
+        },
+    );
+    return resultId;
+}catch(error)
+{
+    console.error('Error calculating and saving result:', error);
+        throw error; // Propagate error to the caller
+}
+}
+//get user result
+export const getExamResult = async (resultId) => {
+    try {
+      
+      const response = await axios.get(`http://localhost:8081/api/users/result/getresult/${resultId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching exam result:', error);
+      throw error; // Propagate the error to handle it in the calling code
+    }
+  };
