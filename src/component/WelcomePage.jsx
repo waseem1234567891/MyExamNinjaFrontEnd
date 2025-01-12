@@ -7,6 +7,7 @@ const WelcomePage = () => {
   const { message } = location.state || {};
   const [exams, setExams] = useState([]);
   const navigate = useNavigate();
+  const [averageScores, setAverageScores] = useState({});  // To store average scores for exams
 
   // Fetch available exams on component mount
   useEffect(() => {
@@ -18,14 +19,31 @@ const WelcomePage = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setExams(response.data);
+        setExams(response.data); // Set exams without the average score
+        
+        const avgScores = {};
+        for (const exam of response.data) {
+          try {
+            const res = await axios.get(`http://localhost:8081/api/users/result/average-score/${exam.id}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            if (res.data != null) {
+              avgScores[exam.id] = res.data; // Only add score if it's not null
+            }
+          } catch (error) {
+            console.error(`Failed to fetch average score for exam ${exam.id}:`, error);
+          }
+        }
+        setAverageScores(avgScores); // Update the state with average scores
       } catch (error) {
         console.error("Failed to fetch exams:", error.response?.data?.message || error.message);
       }
     };
 
     fetchExams();
-  }, []);
+  }, []); // Only fetch once when the component mounts
 
   // Navigate to the exam start page
   const handleStartExam = (examId) => {
@@ -76,6 +94,12 @@ const WelcomePage = () => {
     buttonHover: {
       backgroundColor: '#45a049',
     },
+    averageScore: {
+      marginTop: '10px',
+      fontSize: '14px',
+      color: '#333',
+      fontStyle: 'italic',
+    },
   };
 
   return (
@@ -97,6 +121,11 @@ const WelcomePage = () => {
             >
               {exam.title} (Total Questions: {exam.numberOfQuestion})
             </button>
+
+            {/* Only display average score if it's available */}
+            {averageScores[exam.id] != null && (
+              <p style={styles.averageScore}>Average Score: {averageScores[exam.id]}%</p>
+            )}
           </li>
         ))}
       </ul>

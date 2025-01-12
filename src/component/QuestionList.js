@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getQuestionsByExamId, submitExamResult, saveExamProgress, getExamProgress, deleteExamProgress } from '../services/QuestionService'; // Import submitExamResult API
+import { getQuestionsByExamId, submitExamResult, saveExamProgress, getExamProgress, deleteExamProgress, getQuestionsByExamId_Exam, calculateAndSaveResult } from '../services/QuestionService'; // Import submitExamResult API
 import { useParams } from 'react-router-dom';
-
+import { useLocation, useNavigate } from 'react-router-dom';
 const QuestionList = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
     const { examId } = useParams(); // Extract examId from the URL
     const [questions, setQuestions] = useState([]);
     const [questions1, setQuestions1] = useState([]);
@@ -104,9 +106,12 @@ const QuestionList = () => {
     };
 
     //we calculate the result
-    const calculateResult = async () => {
+    const calculateResult = () => {
         let totalQuestions = questions1.length; // Total number of questions
-        //const progress = await getExamProgress(userId,examId);
+        //const userAnswerFromProgress = await getExamProgress(userId,examId);
+        //const questionAnswerFromQuestion= await getQuestionsByExamId_Exam(examId);
+        //console.log(userAnswerFromProgress);
+        //console.log(questionAnswerFromQuestion);
         let correctAnswers = 0;
         let incorrectAnswers = 0;
     
@@ -137,30 +142,15 @@ const QuestionList = () => {
     
 
     const handleSubmit = async () => {
-        const result = calculateResult(); // Calculate the result first
-    
-        // Prepare the data to match the Result entity
-        const submissionData = {
-            userId: 1, // Replace with the actual logged-in user ID
-            examId: examId, // ID of the current exam
-            totalQuestions: result.totalQuestions,
-            correctAnswers: result.correctAnswers,
-            score: (result.correctAnswers / result.totalQuestions) * 100, // Calculate the percentage score
-            userAnswers: selectedOptions, // Map of questionId -> userAnswer
-            isPassed: result.isPassed,
-            attemptDate: new Date(), // Current timestamp
-        };
-        //submit exam
+      
         try {
-            console.log(submissionData)
-            await submitExamResult(submissionData); // API call to submit the result
-            
-            alert(`Exam submitted successfully!
-                Total Questions: ${result.totalQuestions}
-                Correct Answers: ${result.correctAnswers}
-                Score: ${submissionData.score.toFixed(2)}%
-                Passed: ${result.isPassed ? 'Yes' : 'No'}`);
+            console.log('submit exam and calculate result')
+           
+           const result= await calculateAndSaveResult(examProgressId)
+           const resultId=result.data
             setSubmitted(true);
+            console.log(resultId)
+            navigate(`/result/${resultId}`);
         } catch (error) {
             console.error('Error submitting exam:', error);
             alert('Failed to submit exam. Please try again.');
